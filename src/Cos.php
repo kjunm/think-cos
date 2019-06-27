@@ -89,7 +89,7 @@ class Cos
     {
         if(!self::$_instance instanceof self){
             if(empty($config)){
-                throw new Exception('cos config is empty!');
+                throw new \Exception('cos config is empty!');
             }
             self::$_instance = new self($config);
         }
