@@ -7,6 +7,7 @@
  */
 namespace kjunm\thinkcos;
 use Qcloud\Cos\Client;
+use sts;
 class Cos
 {
     /** @var $secretId 云api密钥 */
@@ -167,5 +168,36 @@ class Cos
             $object_list[] = $value['Key'];
         }
         return $object_list;
+    }
+
+    public function getTempKey($options = [])
+    {
+        $config = [
+            'url' => 'https://sts.tencentcloudapi.com/',
+            'domain' => 'sts.tencentcloudapi.com',
+            'proxy' => '',
+            'secretId' => $this->secretId, // 固定密钥
+            'secretKey' => $this->secretKey, // 固定密钥
+            'bucket' => $this->bucket, // 换成你的 bucket
+            'region' => $this->region, // 换成 bucket 所在园区
+            'durationSeconds' => 1800, // 密钥有效期
+            'allowPrefix' => '*',
+            'allowActions' => array (
+                // 简单上传
+                'name/cos:PutObject',
+                'name/cos:PostObject',
+                // 分片上传
+                'name/cos:InitiateMultipartUpload',
+                'name/cos:ListMultipartUploads',
+                'name/cos:ListParts',
+                'name/cos:UploadPart',
+                'name/cos:CompleteMultipartUpload',
+                //获取存储通列表
+                "name/cos:GetService",
+            )
+        ];
+        $config = array_merge($config,$options);
+        $sts = new STS();
+        return $sts->getTempKeys($config);
     }
 }
