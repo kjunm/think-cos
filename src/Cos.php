@@ -27,21 +27,21 @@ class Cos
     /**
      * Cos constructor.
      * @param array $config
-     * @throws Exception
+     * @throws \Exception
      */
     private function __construct(array $config=[])
     {
         if(!isset($config['secretId'])){
-            throw new Exception('The "secretId" property must be set.');
+            throw new \Exception('The "secretId" property must be set.');
         }
         if(!isset($config['secretKey'])){
-            throw new Exception('The "secretKey" property must be set.');
+            throw new \Exception('The "secretKey" property must be set.');
         }
         if(!isset($config['region'])){
-            throw new Exception('The "region" property must be set.');
+            throw new \Exception('The "region" property must be set.');
         }
         if(!isset($config['bucket'])){
-            throw new Exception('The "region" property must be set.');
+            throw new \Exception('The "region" property must be set.');
         }
         $this->secretId = $config['secretId'];
         $this->secretKey = $config['secretKey'];
@@ -107,6 +107,7 @@ class Cos
     }
 
     /**
+     * 上传对象
      * @param $path
      * @param $filePath
      * @return mixed
@@ -115,5 +116,56 @@ class Cos
     {
         $body = fopen($filePath,'rb');
         return $this->getClient()->Upload($this->bucket,$path,$body);
+    }
+
+    /**
+     * 删除对象
+     * @param $path
+     * @return mixed
+     */
+    public function delete($path)
+    {
+        return $this->getClient()->deleteObject(['Bucket' => $this->bucket,'Key' => $path]);
+    }
+
+    /**
+     * 删除多个对象
+     * @param array $path_arr
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteMulti(array $path_arr)
+    {
+        if(!is_array($path_arr)){
+            throw new \Exception('The "path_arr" property must be a array.');
+        }
+        $objects = [];
+        foreach ($path_arr as $value){
+            $objects[]['Key'] = $value;
+        }
+        return $this->getClient()->deleteObjects(['Bucket' => $this->bucket,'Objects' => $objects]);
+    }
+
+    /**
+     * 获取对象列表
+     * @param array $options = [
+     *      'Bucket' => 存储桶名称，格式：BucketName-APPID
+     *      'Delimiter' => 默认为空，设置分隔符，比如设置/来模拟文件夹
+     *      'EncodingType' => 默认不编码，规定返回值的编码方式，可选值：url
+     *      'Marker' => 默认以 UTF-8 二进制顺序列出条目，标记返回 objects 的 list 的起点位置
+     *      'Prefix' => 默认为空，对 object 的 key 进行筛选，匹配指定前缀（prefix）的 objects
+     *      'MaxKeys' => 最多返回的 objects 数量，默认为最大的1000
+     * ]
+     * @return array
+     */
+    public function getAllObject($options = [])
+    {
+        $options = array_merge(['Bucket' => $this->bucket,'MaxKeys' => 100],$options);
+        $list =  $this->getClient()->listObjects($options);
+        $object_list = [];
+        foreach ($list['Contents'] as $value){
+            $object_list[] = $value['Key'];
+        }
+        return $object_list;
     }
 }
