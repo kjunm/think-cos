@@ -99,7 +99,7 @@ class Cos
 
     /**
      * 文件是否存在
-     * @param $path upload/a.jpg
+     * @param $path string eg:upload/a.jpg
      * @return bool
      */
     public function has($path)
@@ -108,14 +108,25 @@ class Cos
     }
 
     /**
-     * 上传对象
-     * @param $path
-     * @param $filePath
+     * 上传文件
+     * @param $path string 存放路径
+     * @param $filePath  string 文件路径
      * @return mixed
      */
     public function upload($path,$filePath)
     {
         $body = fopen($filePath,'rb');
+        return $this->getClient()->Upload($this->bucket,$path,$body);
+    }
+
+    /**
+     * 上传字符串
+     * @param $path string 存放路径
+     * @param $body string 字符串
+     * @return mixed
+     */
+    public function uploadString($path,$body)
+    {
         return $this->getClient()->Upload($this->bucket,$path,$body);
     }
 
